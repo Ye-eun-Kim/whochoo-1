@@ -7,7 +7,7 @@ from langchain.retrievers import ContextualCompressionRetriever
 from langchain.llms import HuggingFaceHub
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
-
+import faiss
 
 
 loader = CSVLoader(file_path="/path/to/csvfile.csv")
@@ -21,9 +21,12 @@ docs = loader.load()
 #     is_separator_regex=False,
 # )
 
-RAG = RAGPretrainedModel.from_pretrained("colbert-ir/colbertv2.0")
+# vectordb = faiss.read_index("path/to/vectordb.faiss")
 
-retriever = FAISS.from_documents(docs, HuggingFaceBgeEmbeddings()).as_retriever(
+vectordb = FAISS.load_local("path/to/vectordb.faiss")
+
+RAG = RAGPretrainedModel.from_pretrained("colbert-ir/colbertv2.0")
+retriever = vectordb.as_retriever(
     search_kwargs={"k": 10} # top-10
 )
 
@@ -42,7 +45,7 @@ prompt = '' # format prompt...
 ### TODO: load hf model! ###
 repo_id='yanolja/EEVE-Korean-10.8B-v1.0'
 llm = HuggingFaceHub(
-    repo_id=repo_id, model_kwargs={"temperature": 0.1, "max_length": 512}
+    repo_id=repo_id, model_kwargs={"temperature": 0.1, "max_length": 2048}
 )
 
 # merge retrieved document
