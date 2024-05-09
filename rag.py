@@ -45,6 +45,7 @@ llm = HuggingFaceHub(
     repo_id=repo_id, model_kwargs={"temperature": 0.1, "max_length": 512}
 )
 
+# merge retrieved document
 def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
 
@@ -56,3 +57,8 @@ rag_chain = (
     | llm
     | StrOutputParser()
 )
+
+question = "화장품 추천해죠"
+response = rag_chain.invoke(question)
+
+print(response)
