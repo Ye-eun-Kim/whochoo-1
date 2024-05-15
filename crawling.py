@@ -53,10 +53,10 @@ def get_reviews(item_url):
                 'date': date_element.text.strip(),
                 'content': review_text
             })
-
+# TODO: modify the value
             if len(reviews) >= 15:
                 break
-
+# TODO: modify the value
         if len(reviews) >= 15:
             break
 
@@ -112,6 +112,7 @@ def get_item_details(url):
 
     all_items_data = []
 
+# TODO: modify the value
     for i in range(2):
         item = items[i]
         item_idx = i + 1
