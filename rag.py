@@ -8,6 +8,8 @@ from langchain.llms import HuggingFaceHub
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
 import faiss
+from langchain.prompts import PromptTemplate, ChatPromptTemplate
+
 
 
 loader = CSVLoader(file_path="/path/to/csvfile.csv")
@@ -42,8 +44,25 @@ compression_retriever = ContextualCompressionRetriever(
 ### TODO: create prompt! ###
 # prompt = '' # format prompt...
 
-def format_prompt(qustion):
-    return f"<사용자> : {qustion}"
+prompt = ChatPromptTemplate(messages=PromptTemplate(input_input_variables=["context", "question"],
+                                                    template="### 리뷰를 참고해서 사용자에게 화장품을 추천해줘. \n\n ### 사용자: {question}\n\n### 리뷰: {context}\n\n### 추천:"),
+                        input_input_variables=["context", "question"]
+                        )
+
+"""
+ChatPromptTemplate(
+    input_variables=['context', 'question'], 
+    messages=[
+        HumanMessagePromptTemplate(
+            prompt=PromptTemplate(
+                input_variables=['context', 'question'], 
+                template="You are an assistant for question-answering tasks. Use the following pieces of retrieved context to answer the question. If you don't know the answer, just say that you don't know. Use three sentences maximum and keep the answer concise.\nQuestion: {question} \nContext: {context} \nAnswer:"
+                )
+            )
+        ]
+    )
+"""
+
     
 
 ### TODO: load hf model! ###
