@@ -40,11 +40,12 @@ compression_retriever = ContextualCompressionRetriever(
 # )
 
 ### TODO: create prompt! ###
+
 # prompt = '' # format prompt...
 
 def format_prompt(qustion):
     return f"<사용자> : {qustion}"
-    
+
 
 ### TODO: load hf model! ###
 repo_id='yanolja/EEVE-Korean-10.8B-v1.0'
@@ -64,6 +65,7 @@ rag_chain = (
     | llm
     | StrOutputParser()
 )
+
 
 question = format_prompt ("화장품 추천해죠")
 response = rag_chain.invoke(question)

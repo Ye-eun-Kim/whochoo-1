@@ -3,3 +3,7 @@ langchain
 huggingface_hub 
 transformers 
 datasets
+requests
+beautifulsoup4
+selenium
+
