@@ -44,10 +44,13 @@ compression_retriever = ContextualCompressionRetriever(
 ### TODO: create prompt! ###
 # prompt = '' # format prompt...
 
-prompt = ChatPromptTemplate(messages=PromptTemplate(input_input_variables=["context", "question"],
-                                                    template="### 리뷰를 참고해서 사용자에게 화장품을 추천해줘. \n\n ### 사용자: {question}\n\n### 리뷰: {context}\n\n### 추천:"),
-                        input_input_variables=["context", "question"]
-                        )
+prompt = ChatPromptTemplate(
+    messages=PromptTemplate(
+        input_input_variables=["context", "question"],
+        template="### 리뷰를 참고해서 사용자에게 화장품을 추천해줘. \n\n ### 사용자: {question}\n\n### 리뷰: {context}\n\n### 추천: "
+        ),
+    input_input_variables=["context", "question"]
+    )
 
 """
 ChatPromptTemplate(
