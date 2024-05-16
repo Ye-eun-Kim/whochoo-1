@@ -1,0 +1,5 @@
+torch==2.2.1
+langchain
+huggingface_hub 
+transformers 
+datasets
