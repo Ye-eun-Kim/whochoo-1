@@ -4,7 +4,8 @@ from ragatouille import RAGPretrainedModel
 from langchain_community.vectorstores import FAISS
 from langchain_community.embeddings import HuggingFaceBgeEmbeddings
 from langchain.retrievers import ContextualCompressionRetriever
-from langchain_community.llms import HuggingFaceHub
+from langchain_community.llms import HuggingFaceEndpoint
+# from langchain_community.llms.huggingface_pipeline import HuggingFacePipeline
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
 import faiss
@@ -12,7 +13,7 @@ from langchain.prompts import PromptTemplate, ChatPromptTemplate, HumanMessagePr
 import os
 
 os.environ["HUGGINGFACEHUB_API_TOKEN"] = "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"
-
+os.environ['HF_HOME'] = "/home/jovyan/team_3/"
 
 # loader = CSVLoader(file_path="/path/to/csvfile.csv")
 # docs = loader.load()
@@ -31,7 +32,7 @@ vectordb = FAISS.load_local("./", HuggingFaceBgeEmbeddings(), allow_dangerous_de
 
 RAG = RAGPretrainedModel.from_pretrained("colbert-ir/colbertv2.0")
 retriever = vectordb.as_retriever(
-    search_kwargs={"k": 10} # top-10
+    search_kwargs={"k": 5} # top-10
 )
 
 compression_retriever = ContextualCompressionRetriever(
@@ -42,6 +43,12 @@ compression_retriever = ContextualCompressionRetriever(
 # compressed_docs = compression_retriever.invoke(
 #     "What animation studio did Miyazaki found"
 # )
+
+compressed_docs = compression_retriever.invoke(
+    "What animation studio did Miyazaki found"
+)
+
+print(compressed_docs[0])
 
 ### TODO: create prompt! ###
 
@@ -55,26 +62,13 @@ prompt = ChatPromptTemplate(
     input_variables=["context", "question"]
     )
 
-"""
-ChatPromptTemplate(
-    input_variables=['context', 'question'], 
-    messages=[
-        HumanMessagePromptTemplate(
-            prompt=PromptTemplate(
-                input_variables=['context', 'question'], 
-                template="You are an assistant for question-answering tasks. Use the following pieces of retrieved context to answer the question. If you don't know the answer, just say that you don't know. Use three sentences maximum and keep the answer concise.\nQuestion: {question} \nContext: {context} \nAnswer:"
-                )
-            )
-        ]
-    )
-"""
 
     
 
 ### TODO: load hf model! ###
 repo_id='yanolja/EEVE-Korean-10.8B-v1.0'
-llm = HuggingFaceHub(
-    repo_id=repo_id, model_kwargs={"temperature": 0.1, "max_length": 2048}
+llm = HuggingFaceEndpoint(
+    repo_id=repo_id, temperature=0.1, max_length=2048
 )
 
 # merge retrieved document
@@ -93,5 +87,6 @@ rag_chain = (
 
 question = "민감성 피부를 위한 제품 추천해죠"
 response = rag_chain.invoke(question)
+# response = rag_chain.invoke(question)
 
 print(response)
