@@ -42,6 +42,7 @@ compression_retriever = ContextualCompressionRetriever(
 # )
 
 ### TODO: create prompt! ###
+
 # prompt = '' # format prompt...
 
 prompt = ChatPromptTemplate(
@@ -86,6 +87,7 @@ rag_chain = (
     | llm
     | StrOutputParser()
 )
+
 
 question = format_prompt ("화장품 추천해죠")
 response = rag_chain.invoke(question)
