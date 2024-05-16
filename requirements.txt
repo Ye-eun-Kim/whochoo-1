@@ -6,4 +6,5 @@ datasets
 requests
 beautifulsoup4
 selenium
+ragatouille
 
