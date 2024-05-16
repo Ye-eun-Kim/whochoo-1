@@ -9,7 +9,7 @@ from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
 import faiss
 
-loader = CSVLoader(file_path="/home/jovyan/team_3/whochoo/sample_output.csv")
+loader = CSVLoader(file_path="./sample_output.csv")
 docs = loader.load()
 
 vectordb = FAISS.from_documents(docs, HuggingFaceBgeEmbeddings())
