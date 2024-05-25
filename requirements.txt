@@ -6,5 +6,6 @@ datasets
 requests
 beautifulsoup4
 selenium
-ragatouille
-
+ragatouille==0.0.8
+langchain_community
+aiohttp==3.9.1
