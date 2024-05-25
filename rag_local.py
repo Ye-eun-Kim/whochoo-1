@@ -10,15 +10,31 @@ from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
 import faiss
 from langchain.prompts import PromptTemplate, ChatPromptTemplate, HumanMessagePromptTemplate
+from langchain_community.llms.huggingface_pipeline import HuggingFacePipeline
 import os
 
 os.environ["HUGGINGFACEHUB_API_TOKEN"] = "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"
 os.environ['HF_HOME'] = "/home/jovyan/team_3/"
 
+# loader = CSVLoader(file_path="/path/to/csvfile.csv")
+# docs = loader.load()
+
+# text_splitter = CharacterTextSplitter(
+#     separator="\n\n",
+#     chunk_size=100,
+#     chunk_overlap=10,
+#     length_function=len,
+#     is_separator_regex=False,
+# )
+
+# vectordb = faiss.read_index("path/to/vectordb.faiss")
 
 vectordb = FAISS.load_local("./", HuggingFaceBgeEmbeddings(), allow_dangerous_deserialization=True)
 
 RAG = RAGPretrainedModel.from_pretrained("colbert-ir/colbertv2.0")
+#RAGPretrainedModel.save_pretrained("/mnt/disk1/hjyang/llama2/saved_models/Llama-2-7b-chat-hf")
+
+
 retriever = vectordb.as_retriever(
     search_kwargs={"k": 5} # top-10
 )
@@ -51,14 +67,14 @@ prompt = ChatPromptTemplate(
     )
 
 
-    
-
-### TODO: load hf model! ###
-#repo_id='yanolja/EEVE-Korean-10.8B-v1.0'
-repo_id='mistralai/Mistral-7B-Instruct-v0.2'
-llm = HuggingFaceEndpoint(
-    repo_id=repo_id, temperature=0.1, max_length=512
+gpu_llm = HuggingFacePipeline.from_model_id(
+    model_id="yanolja/EEVE-Korean-10.8B-v1.0",
+    task="text-generation",
+    device=0, cache_dir="/home/jovyan/team_3/", # -1 for CPU, 
+    batch_size=2,  # adjust as needed based on GPU map and model size.
+    model_kwargs={"temperature": 0, "max_length": 512},
 )
+
 
 # merge retrieved document
 def format_docs(docs):
@@ -69,7 +85,7 @@ def format_docs(docs):
 rag_chain = (
     {"context": compression_retriever | format_docs, "question": RunnablePassthrough()}
     | prompt
-    | llm
+    | gpu_llm
     | StrOutputParser()
 )
 
