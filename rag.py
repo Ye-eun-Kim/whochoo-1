@@ -27,17 +27,6 @@ compression_retriever = ContextualCompressionRetriever(
     base_compressor=RAG.as_langchain_document_compressor(), base_retriever=retriever
 )
 
-### example usage ###
-# compressed_docs = compression_retriever.invoke(
-#     "What animation studio did Miyazaki found"
-# )
-
-compressed_docs = compression_retriever.invoke(
-    "What animation studio did Miyazaki found"
-)
-
-print(compressed_docs[0])
-
 ### TODO: create prompt! ###
 
 # prompt = '' # format prompt...
@@ -45,7 +34,7 @@ print(compressed_docs[0])
 prompt = ChatPromptTemplate(
     messages=[HumanMessagePromptTemplate(prompt=PromptTemplate(
         input_variables=["context", "question"],
-        template="### 리뷰를 참고해서 사용자에게 화장품을 추천해줘. \n\n ### 사용자: {question}\n\n### 리뷰: {context}\n\n### 추천: "
+        template="### 리뷰와 화장품 정보를 참고해서 사용자에게 화장품을 추천해주고 그 이유도 알려줘. \n\n ### 사용자: {question}\n\n### 리뷰: {context}\n\n### 추천: "
         ))],
     input_variables=["context", "question"]
     )

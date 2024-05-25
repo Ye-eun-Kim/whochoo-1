@@ -12,27 +12,15 @@ import faiss
 from langchain.prompts import PromptTemplate, ChatPromptTemplate, HumanMessagePromptTemplate
 from langchain_community.llms.huggingface_pipeline import HuggingFacePipeline
 import os
+import torch
+
 
 os.environ["HUGGINGFACEHUB_API_TOKEN"] = "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"
-os.environ['HF_HOME'] = "/home/jovyan/team_3/"
 
-# loader = CSVLoader(file_path="/path/to/csvfile.csv")
-# docs = loader.load()
-
-# text_splitter = CharacterTextSplitter(
-#     separator="\n\n",
-#     chunk_size=100,
-#     chunk_overlap=10,
-#     length_function=len,
-#     is_separator_regex=False,
-# )
-
-# vectordb = faiss.read_index("path/to/vectordb.faiss")
 
 vectordb = FAISS.load_local("./", HuggingFaceBgeEmbeddings(), allow_dangerous_deserialization=True)
 
 RAG = RAGPretrainedModel.from_pretrained("colbert-ir/colbertv2.0")
-#RAGPretrainedModel.save_pretrained("/mnt/disk1/hjyang/llama2/saved_models/Llama-2-7b-chat-hf")
 
 
 retriever = vectordb.as_retriever(
@@ -42,17 +30,6 @@ retriever = vectordb.as_retriever(
 compression_retriever = ContextualCompressionRetriever(
     base_compressor=RAG.as_langchain_document_compressor(), base_retriever=retriever
 )
-
-### example usage ###
-# compressed_docs = compression_retriever.invoke(
-#     "What animation studio did Miyazaki found"
-# )
-
-compressed_docs = compression_retriever.invoke(
-    "What animation studio did Miyazaki found"
-)
-
-print(compressed_docs[0])
 
 ### TODO: create prompt! ###
 
@@ -68,11 +45,12 @@ prompt = ChatPromptTemplate(
 
 
 gpu_llm = HuggingFacePipeline.from_model_id(
-    model_id="yanolja/EEVE-Korean-10.8B-v1.0",
+    model_id="yanolja/EEVE-Korean-Instruct-10.8B-v1.0",
     task="text-generation",
-    device=0, cache_dir="/home/jovyan/team_3/", # -1 for CPU, 
-    batch_size=2,  # adjust as needed based on GPU map and model size.
-    model_kwargs={"temperature": 0, "max_length": 512},
+    device=None,
+    model_kwargs={"device_map":"auto"}, # -1 for CPU, 
+    batch_size=2,  # adjust as needed based on GPU map and model size
+    pipeline_kwargs={"max_new_tokens":512}
 )
 
 
@@ -92,6 +70,5 @@ rag_chain = (
 
 question = "민감성 피부를 위한 제품 추천해죠"
 response = rag_chain.invoke(question)
-# response = rag_chain.invoke(question)
 
 print(response)
