@@ -4,7 +4,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 import time
-import csv
+import json
 import re
 
 # Specify the path to the ChromeDriver executable
@@ -47,7 +47,7 @@ def get_reviews(item_url):
             content_element = review_element.find_element(By.CSS_SELECTOR, 'div.txt_inner')
 
             # Extract badges and tags
-            badge_elements = review_element.find_elements(By.CSS_SELECTOR, 'div.badge a.point_flag')
+            badge_elements = review_element.find_elements(By.CSS_SELECTOR, 'div.badge span')
             badges = [badge.text.strip() for badge in badge_elements]
 
             tag_elements = review_element.find_elements(By.CSS_SELECTOR, 'p.tag span')
@@ -65,8 +65,8 @@ def get_reviews(item_url):
                 'score': score_text,
                 'date': date_element.text.strip(),
                 'content': review_text,
-                'badges': ', '.join(badges),
-                'tags': ', '.join(tags)
+                'badges': badges,
+                'tags': tags
             })
 
             if len(reviews) >= 15:
@@ -124,8 +124,7 @@ def get_item_details(url):
     if not items:
         raise ValueError("No items found on the page. Check the page structure or the request URL.")
 
-    metadata = []
-    review_data = []
+    all_data = []
 
     for i in range(2):  # Adjust the range as needed
         item = items[i]
@@ -138,7 +137,7 @@ def get_item_details(url):
         full_item_link = item.find('a')['href']
         raw_review_data = get_reviews(full_item_link)
 
-        item_for_meta = {
+        item_data = {
             'idx': item_idx,
             'brand': item_brand,
             'name': item_name,
@@ -146,84 +145,20 @@ def get_item_details(url):
             'total_reviews': raw_review_data['total_reviews'],
             'average_star_rating': raw_review_data['average_star_rating'],
             'star_distribution': raw_review_data['star_distribution'],
-            'skin_type_dry': raw_review_data['evaluation_categories']['피부타입'].get('건성에 좋아요', '0'),
-            'skin_type_combination': raw_review_data['evaluation_categories']['피부타입'].get('복합성에 좋아요', '0'),
-            'skin_type_oily': raw_review_data['evaluation_categories']['피부타입'].get('지성에 좋아요', '0'),
-            'skin_concern_moisturizing': raw_review_data['evaluation_categories']['피부고민'].get('보습에 좋아요', '0'),
-            'skin_concern_soothing': raw_review_data['evaluation_categories']['피부고민'].get('진정에 좋아요', '0'),
-            'skin_concern_wrinkle_whitening': raw_review_data['evaluation_categories']['피부고민'].get('주름/미백에 좋아요', '0'),
-            'irritation_non_irritating': raw_review_data['evaluation_categories']['자극도'].get('자극없이 순해요', '0'),
-            'irritation_moderate': raw_review_data['evaluation_categories']['자극도'].get('보통이에요', '0'),
-            'irritation_irritating': raw_review_data['evaluation_categories']['자극도'].get('자극이 느껴져요', '0')
+            'evaluation_categories': raw_review_data['evaluation_categories'],
+            'reviews': raw_review_data['reviews']
         }
-        metadata.append(item_for_meta)
+        all_data.append(item_data)
 
-        for review in raw_review_data['reviews']:
-            item_for_review = {
-                'idx': item_idx,
-                'user_id': review['user_id'],
-                'review_score': review['score'],
-                'review_date': review['date'],
-                'review_content': review['content'],
-                'badges': review['badges'],
-                'tags': review['tags']
-            }
-            review_data.append(item_for_review)
-
-    return metadata, review_data
+    return all_data
 
 # URL of the page to crawl
 url = 'https://www.oliveyoung.co.kr/store/display/getMCategoryList.do?dispCatNo=100000100010014&fltDispCatNo=&prdSort=01&pageIdx=1&rowsPerPage=48&searchTypeSort=btn_thumb&plusButtonFlag=N&isLoginCnt=3&aShowCnt=0&bShowCnt=0&cShowCnt=0&trackingCd=Cat100000100010014_Small&amplitudePageGubun=&t_page=&t_click=&midCategory=%EC%97%90%EC%84%BC%EC%8A%A4%2F%EC%84%B8%EB%9F%BC%2F%EC%95%B0%ED%94%8C&smallCategory=%EC%A0%84%EC%B2%B4&checkBrnds=&lastChkBrnd='
-metadata, review_data = get_item_details(url)
+data = get_item_details(url)
 
-# Write metadata to CSV
-with open('metadata.csv', 'w', encoding='utf-8', newline='') as csvfile:
-    fieldnames = [
-        'Idx', 'Brand', 'Product Name', 'Current Price (Won)', 'Total Reviews',
-        'Average Star Rating (out of 5)', 'Star Distribution',
-        'Skin Type - Dry (%)', 'Skin Type - Combination (%)', 'Skin Type - Oily (%)',
-        'Skin Concern - Moisturizing (%)', 'Skin Concern - Soothing (%)', 'Skin Concern - Wrinkle/Whitening (%)',
-        'Irritation - Non-irritating (%)', 'Irritation - Moderate (%)', 'Irritation - Irritating (%)'
-    ]
-    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-    writer.writeheader()
-
-    for data in metadata:
-        writer.writerow({
-            'Idx': data['idx'],
-            'Brand': data['brand'],
-            'Product Name': data['name'],
-            'Current Price (Won)': data['price'],
-            'Total Reviews': data['total_reviews'],
-            'Average Star Rating (out of 5)': data['average_star_rating'],
-            'Star Distribution': data['star_distribution'],
-            'Skin Type - Dry (%)': data['skin_type_dry'],
-            'Skin Type - Combination (%)': data['skin_type_combination'],
-            'Skin Type - Oily (%)': data['skin_type_oily'],
-            'Skin Concern - Moisturizing (%)': data['skin_concern_moisturizing'],
-            'Skin Concern - Soothing (%)': data['skin_concern_soothing'],
-            'Skin Concern - Wrinkle/Whitening (%)': data['skin_concern_wrinkle_whitening'],
-            'Irritation - Non-irritating (%)': data['irritation_non_irritating'],
-            'Irritation - Moderate (%)': data['irritation_moderate'],
-            'Irritation - Irritating (%)': data['irritation_irritating']
-        })
-
-with open('reviews_data.csv', 'w', encoding='utf-8', newline='') as csvfile:
-    fieldnames = ['Index', 'User ID', 'User Attributes', 'User Activity', 'Score (out of 5)', 'Date', 'Review Content']
-    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-    writer.writeheader()
-
-    for review in review_data:
-        writer.writerow({
-            'Index': review['idx'],
-            'User ID': review['user_id'],
-            'User Attributes': review['tags'],
-            'User Activity': review['badges'],
-            'Score (out of 5)': review['review_score'],
-            'Date': review['review_date'],
-            'Review Content': review['review_content']
-        })
+# Write data to JSON
+with open('data.json', 'w', encoding='utf-8') as jsonfile:
+    json.dump(data, jsonfile, ensure_ascii=False, indent=4)
 
 # Close the WebDriver
 driver.quit()
-
