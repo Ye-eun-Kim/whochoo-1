@@ -19,12 +19,12 @@ if __name__=="__main__":
     args = parse_arguments()
     
     def metadata_func(record: dict, metadata: dict) -> dict:
-        original = json.load(open(args.data_path, "r"))
+        original = json.load(open(args.metadata_path, "r"))
         
-        metadata["product"] = original[record.get("idx")-1]
+        metadata["product"] = original[record.get("idx")-1] # reviews
         
         for key in record.keys():
-            if key != "idx" or key!="content":
+            if key != "idx" and key!="content":
                 metadata[key] = record.get(key)
         
         return metadata
