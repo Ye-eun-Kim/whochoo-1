@@ -8,6 +8,7 @@ def parse_arguments():
     parser.add_argument("--data_type", type=str, default="json", choices=["json", "csv"])
     parser.add_argument("--data_path", type=str, default="./data.json")
     parser.add_argument("--model_id", type=str, default="mistralai/Mistral-7B-Instruct-v0.2")
+    parser.add_argument("--prompt", type=str, default=None)
     
     args = parser.parse_args()
     
