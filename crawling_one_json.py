@@ -70,15 +70,15 @@ def get_reviews(item_url, item_idx):
                 'content': review_text
             })
 
-            if len(reviews) >= 10:
+            if len(reviews) >= 1:
                 break
-        if len(reviews) >= 10:
+        if len(reviews) >= 1:
             break
 
     return reviews
 
-# Function to get item details
-def get_item_details(url):
+
+def get_item_details_from_page(url, item_idx):
     driver.get(url)
     time.sleep(2)
     soup = BeautifulSoup(driver.page_source, 'html.parser')
@@ -88,9 +88,9 @@ def get_item_details(url):
 
     all_data = []
 
-    for i in range(2):  # Adjust the range as needed
+    for i in range(1):
+    # for i in range(len(items)):
         item = items[i]
-        item_idx = i + 1
         item_brand = item.find('span', {'class': 'tx_brand'}).text.strip()
         item_name = item.find('p', {'class': 'tx_name'}).text.strip()
         item_name = re.sub(r'\[.*?\]', '', item_name).strip()
@@ -134,18 +134,37 @@ def get_item_details(url):
             'name': item_name,
             'price': item_price,
             'total_reviews': total_reviews,
-            'average_star_rating': average_star_rating,
+            'average_star_rating (out of 5)': average_star_rating,
             'star_distribution': star_distribution,
             'evaluation_categories': evaluation_categories,
             'reviews': raw_review_data
         }
         all_data.append(item_data)
+        item_idx += 1  # Increment item_idx for the next item
+
+    return all_data, item_idx
+
+# Function to get all item details by navigating through pagination
+def get_all_items(base_url, max_pages=14):  # Adjust max_pages as needed
+    all_data = []
+    item_idx = 1  # Initialize item_idx
+
+    for page_idx in range(1, max_pages + 1):
+        # Modify the URL with the current page index
+        url = f"{base_url}&pageIdx={page_idx}"
+
+        # Get item details for the current page
+        page_data, item_idx = get_item_details_from_page(url, item_idx)
+        all_data.extend(page_data)
 
     return all_data
 
-# URL of the page to crawl
-url = 'https://www.oliveyoung.co.kr/store/display/getMCategoryList.do?dispCatNo=100000100010014&fltDispCatNo=&prdSort=01&pageIdx=1&rowsPerPage=48&searchTypeSort=btn_thumb&plusButtonFlag=N&isLoginCnt=3&aShowCnt=0&bShowCnt=0&cShowCnt=0&trackingCd=Cat100000100010014_Small&amplitudePageGubun=&t_page=&t_click=&midCategory=%EC%97%90%EC%84%BC%EC%8A%A4%2F%EC%84%B8%EB%9F%BC%2F%EC%95%B0%ED%94%8C&smallCategory=%EC%A0%84%EC%B2%B4&checkBrnds=&lastChkBrnd='
-data = get_item_details(url)
+
+# URL of the base page to crawl
+base_url = 'https://www.oliveyoung.co.kr/store/display/getMCategoryList.do?dispCatNo=100000100010014&fltDispCatNo=&prdSort=01&rowsPerPage=48&searchTypeSort=btn_thumb&plusButtonFlag=N&isLoginCnt=3&aShowCnt=0&bShowCnt=0&cShowCnt=0&trackingCd=Cat100000100010014_Small&amplitudePageGubun=&t_page=&t_click=&midCategory=%EC%97%90%EC%84%BC%EC%8A%A4%2F%EC%84%B8%EB%9F%BC%2F%EC%95%B0%ED%94%8C&smallCategory=%EC%A0%84%EC%B2%B4&checkBrnds=&lastChkBrnd='
+
+# Get all item details
+data = get_all_items(base_url)
 
 # Write data to JSON
 with open('data.json', 'w', encoding='utf-8') as jsonfile:
