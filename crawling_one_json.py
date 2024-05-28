@@ -14,7 +14,7 @@ chrome_service = Service('./chromedriver-win32/chromedriver.exe')  # Adjust this
 driver = webdriver.Chrome(service=chrome_service)
 
 # Function to get reviews from an item page with pagination
-def get_reviews(item_url):
+def get_reviews(item_url, item_idx):
     driver.get(item_url)
     time.sleep(3)  # Wait for the page to load
 
@@ -61,12 +61,13 @@ def get_reviews(item_url):
             review_text = BeautifulSoup(str(review_html), 'html.parser').get_text(separator=' ').strip()
 
             reviews.append({
+                'item_idx': item_idx,
                 'user_id': user_id,
+                'user_attribute': ', '.join(tags),
+                'user_activity': ', '.join(badges),
                 'score': score_text,
                 'date': date_element.text.strip(),
-                'content': review_text,
-                'badges': badges,
-                'tags': tags
+                'content': review_text
             })
 
             if len(reviews) >= 15:
@@ -74,46 +75,7 @@ def get_reviews(item_url):
         if len(reviews) >= 15:
             break
 
-    # Total number of reviews
-    total_reviews_element = driver.find_element(By.CSS_SELECTOR, 'div.star_area > p.total > em')
-    total_reviews = int(total_reviews_element.text.strip().replace(',', ''))
-
-    # Average star rating
-    average_star_rating_element = driver.find_element(By.CSS_SELECTOR, 'p.num > strong')
-    average_star_rating = float(average_star_rating_element.text.strip())
-
-    # Star rating distribution
-    star_distribution = {'5점': '0', '4점': '0', '3점': '0', '2점': '0', '1점': '0'}
-    star_list_elements = driver.find_elements(By.CSS_SELECTOR, 'ul.graph_list > li')
-
-    for star_element in star_list_elements:
-        star_percentage_element = star_element.find_element(By.CLASS_NAME, 'per')
-        star_count_element = star_element.find_element(By.CLASS_NAME, 'txt')
-        star_percentage = star_percentage_element.text.strip()
-        star_count = star_count_element.text.strip()
-
-        star_distribution[star_count] = star_percentage
-
-    # Extract skin type, skin concern, and irritation data
-    evaluation_categories = {}
-    poll_types = driver.find_elements(By.CSS_SELECTOR, 'dl.poll_type2.type3')
-    for poll in poll_types:
-        category_name = poll.find_element(By.TAG_NAME, 'dt').text.strip()
-        evaluations = poll.find_elements(By.CSS_SELECTOR, 'ul.list > li')
-        category_data = {}
-        for evaluation in evaluations:
-            text = evaluation.find_element(By.CLASS_NAME, 'txt').text.strip()
-            percentage = evaluation.find_element(By.CLASS_NAME, 'per').text.strip().replace('%', '')
-            category_data[text] = percentage
-        evaluation_categories[category_name] = category_data
-
-    return {
-        'total_reviews': total_reviews,
-        'average_star_rating': average_star_rating,
-        'star_distribution': star_distribution,
-        'evaluation_categories': evaluation_categories,
-        'reviews': reviews
-    }
+    return reviews
 
 # Function to get item details
 def get_item_details(url):
@@ -135,18 +97,47 @@ def get_item_details(url):
         item_price = int(item.find('span', {'class': 'tx_cur'}).find('span', {'class': 'tx_num'}).text.strip().replace(',', ''))
 
         full_item_link = item.find('a')['href']
-        raw_review_data = get_reviews(full_item_link)
+        raw_review_data = get_reviews(full_item_link, item_idx)
+
+        total_reviews_element = driver.find_element(By.CSS_SELECTOR, 'div.star_area > p.total > em')
+        total_reviews = int(total_reviews_element.text.strip().replace(',', ''))
+
+        average_star_rating_element = driver.find_element(By.CSS_SELECTOR, 'p.num > strong')
+        average_star_rating = float(average_star_rating_element.text.strip())
+
+        star_distribution = {'5점': '0', '4점': '0', '3점': '0', '2점': '0', '1점': '0'}
+        star_list_elements = driver.find_elements(By.CSS_SELECTOR, 'ul.graph_list > li')
+
+        for star_element in star_list_elements:
+            star_percentage_element = star_element.find_element(By.CLASS_NAME, 'per')
+            star_count_element = star_element.find_element(By.CLASS_NAME, 'txt')
+            star_percentage = star_percentage_element.text.strip()
+            star_count = star_count_element.text.strip()
+
+            star_distribution[star_count] = star_percentage
+
+        evaluation_categories = {}
+        poll_types = driver.find_elements(By.CSS_SELECTOR, 'dl.poll_type2.type3')
+        for poll in poll_types:
+            category_name = poll.find_element(By.TAG_NAME, 'dt').text.strip()
+            evaluations = poll.find_elements(By.CSS_SELECTOR, 'ul.list > li')
+            category_data = {}
+            for evaluation in evaluations:
+                text = evaluation.find_element(By.CLASS_NAME, 'txt').text.strip()
+                percentage = evaluation.find_element(By.CLASS_NAME, 'per').text.strip()
+                category_data[text] = percentage
+            evaluation_categories[category_name] = category_data
 
         item_data = {
             'idx': item_idx,
             'brand': item_brand,
             'name': item_name,
             'price': item_price,
-            'total_reviews': raw_review_data['total_reviews'],
-            'average_star_rating': raw_review_data['average_star_rating'],
-            'star_distribution': raw_review_data['star_distribution'],
-            'evaluation_categories': raw_review_data['evaluation_categories'],
-            'reviews': raw_review_data['reviews']
+            'total_reviews': total_reviews,
+            'average_star_rating': average_star_rating,
+            'star_distribution': star_distribution,
+            'evaluation_categories': evaluation_categories,
+            'reviews': raw_review_data
         }
         all_data.append(item_data)
 
