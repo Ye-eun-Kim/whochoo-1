@@ -47,7 +47,7 @@ def get_reviews(item_url, item_idx):
             content_element = review_element.find_element(By.CSS_SELECTOR, 'div.txt_inner')
 
             # Extract badges and tags
-            badge_elements = review_element.find_elements(By.CSS_SELECTOR, 'div.badge span')
+            badge_elements = review_element.find_elements(By.CSS_SELECTOR, 'div.badge a')
             badges = [badge.text.strip() for badge in badge_elements]
 
             tag_elements = review_element.find_elements(By.CSS_SELECTOR, 'p.tag span')
@@ -70,9 +70,9 @@ def get_reviews(item_url, item_idx):
                 'content': review_text
             })
 
-            if len(reviews) >= 15:
+            if len(reviews) >= 10:
                 break
-        if len(reviews) >= 15:
+        if len(reviews) >= 10:
             break
 
     return reviews
