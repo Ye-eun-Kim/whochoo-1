@@ -1,11 +1,18 @@
 import os
 import requests
 import streamlit as st
+from rag import RagPipeline
+from utils.arguments import parse_arguments
 
 CHATBOT_URL = os.getenv("CHATBOT_URL", "http://localhost:8000/hospital-rag-agent")
 # API_token = '<KEY>'
 # API_URL = ""
 # headers = {"Authorization": f"Bearer {API_TOKEN}"}
+
+args = parse_arguments()
+
+rag = RagPipeline(args)
+
 
 with st.sidebar:
     st.header("About")
@@ -54,7 +61,7 @@ if "messages" not in st.session_state:
 
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+        st.markdown(message["content"]) ## 여기서 에러남!
 
         if "output" in message.keys():
             st.markdown(message["output"])
@@ -71,11 +78,12 @@ if prompt := st.chat_input("후추에게 물어보세요."):
     data = {"text": prompt}
 
     with st.spinner("Searching for an answer..."):
-        response = requests.post(CHATBOT_URL, json=data)
+        # response = requests.post(CHATBOT_URL, json=data) #### TODO ####
+        response = rag.get_response(prompt)
 
-        if response.status_code == 200:
-            output_text = response.json()["output"]
-            explanation = response.json()["intermediate_steps"]
+        if response:
+            output_text = response # response.json()["output"]
+            explanation = "some random text" # response.json()["intermediate_steps"]
 
         else:
             output_text = """An error occurred while processing your message.
