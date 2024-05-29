@@ -61,7 +61,7 @@ if "messages" not in st.session_state:
 
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
-        st.markdown(message["content"]) ## 여기서 에러남!
+        st.markdown(message["content"]) ## 여기서 에러남! >>> print(message) >>> dict_keys(['role', 'content']) 
 
         if "output" in message.keys():
             st.markdown(message["output"])
