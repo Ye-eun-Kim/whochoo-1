@@ -20,8 +20,7 @@ if __name__=="__main__":
     
     def metadata_func(record: dict, metadata: dict) -> dict:
         original = json.load(open(args.metadata_path, "r"))
-        
-        metadata["product"] = original[record.get("idx")-1] # reviews
+        metadata["product"] = original[record.get("item_idx")-1] # reviews
         
         for key in record.keys():
             if key != "idx" and key!="content":
