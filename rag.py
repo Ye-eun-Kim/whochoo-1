@@ -22,8 +22,8 @@ def format_docs(docs):
         metadata = doc.metadata
         review = doc.page_content
         product = metadata["product"]
-        product_str = "##상품:{name}\n\t-브랜드: {brand}\n\t-가격: {price}\n\t-리뷰 수: {total_reviews}\n\t-별점 평균: {average_star_rating}\n".format_map(product)
-        review_str= f"##리뷰: {review}\n\t-리뷰 날짜: {metadata['date']}\n\t-리뷰 별점: {metadata['score']}\n\t-태그: {metadata['tags']}\n"
+        product_str = "##상품:{name}\n\t-브랜드: {brand}\n\t-가격: {price}\n\t-리뷰 수: {total_reviews}\n\t-별점 평균: {average_star_rating (out of 5)}\n".format_map(product)
+        review_str= f"##리뷰: {review}\n\t-리뷰 날짜: {metadata['date']}\n\t-리뷰 별점: {metadata['score']}\n\t-태그: {metadata['user_attribute']}\n"
         
         new_docs.append("".join([product_str, review_str]))
     
@@ -56,7 +56,7 @@ class RagPipeline():
         prompt = ChatPromptTemplate(
             messages=[HumanMessagePromptTemplate(prompt=PromptTemplate(
                 input_variables=["context", "question"],
-                template="### 과제: 너는 화장품 추천 챗봇이야. 리뷰와 화장품 정보를 참고해서 사용자에게 가장 잘 맞는 화장품을 추천해줘.\n\n### 사용자: {question}\n\n### 리뷰: {context}\n\n### 추천: \n상품명: \n가이드: "
+                template="### 과제: 너는 화장품 추천 챗봇이야. 리뷰와 화장품 정보를 참고해서 사용자에게 가장 잘 맞는 화장품을 추천해줘.\n\n### 사용자: {question}\n\n### 리뷰: {context}\n\n### 추천:"
                 ))],
             input_variables=["context", "question"]
             )
@@ -104,7 +104,7 @@ if __name__=="__main__":
     prompt = ChatPromptTemplate(
         messages=[HumanMessagePromptTemplate(prompt=PromptTemplate(
             input_variables=["context", "question"],
-            template="### 과제: 너는 화장품 추천 챗봇이야. 리뷰와 화장품 정보를 참고해서 사용자에게 맞는 화장품을 친절하게 추천해주고 그 이유도 알려줘.\n\n### 사용자: {question}\n\n### 리뷰: {context}\n\n### 추천: \n상품명: \n가이드: "
+            template="### 과제: 너는 화장품 추천 챗봇이야. 리뷰와 화장품 정보를 참고해서 사용자에게 맞는 화장품을 친절하게 추천해주고 그 이유도 알려줘.\n\n### 사용자: {question}\n\n### 리뷰: {context}\n\n### 추천: \n상품명: \n추천 이유: "
             ))],
         input_variables=["context", "question"]
         )
