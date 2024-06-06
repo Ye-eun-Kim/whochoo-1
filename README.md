@@ -2,7 +2,7 @@
 
 후추🧂의 공식 깃허브 레포입니다.
 <!-- ![overview](assets/overview.png =250x)  -->
-<img src="assets/overview.png" alt="drawing" width="768"/>
+<img src="assets/overview_.png" alt="drawing" width="768"/>
 
 ## Overview
 후추는 Langchain🦜, Streamlit, Huggingface🤗 등으로 구현된 RAG 추천 시스템입니다. 올리브영의 리뷰를 크롤링해 벡터DB를 생성하고, 유저의 질문과 가장 연관성 높은 리뷰들을 바탕으로 유저의 기호를 반영한 화장품을 추천해줍니다.
