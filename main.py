@@ -4,8 +4,6 @@ import streamlit as st
 from rag import RagPipeline
 from utils.arguments import parse_arguments
 
-CHATBOT_URL = os.getenv("CHATBOT_URL", "http://localhost:8000/hospital-rag-agent")
-
 args = parse_arguments()
 
 rag = RagPipeline(args)
@@ -41,13 +39,14 @@ if "messages" not in st.session_state:
 
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
-        st.markdown(message["content"]) ## 여기서 에러남! >>> print(message) >>> dict_keys(['role', 'content']) 
+        if "content" in message:
+            st.markdown(message["content"]) ## 여기서 에러남! >>> print(message) >>> dict_keys(['role', 'content']) 
 
         if "output" in message:
             st.markdown(message["output"])
 
         if "explanation" in message:
-            with st.expaner("How was this generated"):
+            with st.expander("How was this generated"):
                 st.info(message["explanation"])
 
 if prompt := st.chat_input("후추에게 물어보세요."):
