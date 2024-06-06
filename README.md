@@ -41,7 +41,7 @@ Python venv 생성 후, `pip install -r requirements.txt`
 1. `utils/arguments.py` 내 `token`의 기본값 수정 
 2. Streamlit으로 실행:
     ```
-    streamlit main.py --server.port <port number>
+    streamlit run main.py --server.port <port number>
     ```
 3. 채팅창에 원하는 화장품 특징 입력
 
